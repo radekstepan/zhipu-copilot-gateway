@@ -1,0 +1,19 @@
+{
+  "id": "1762209712109-qn061",
+  "phase": "start",
+  "timestamp": "2025-11-03T22:41:52.109Z",
+  "request": {
+    "method": "GET",
+    "url": "/api/tags",
+    "headers": {
+      "host": "localhost:11434",
+      "connection": "keep-alive",
+      "user-agent": "GitHubCopilotChat/0.32.4",
+      "x-vscode-user-agent-library-version": "electron-fetch",
+      "sec-fetch-site": "none",
+      "sec-fetch-mode": "no-cors",
+      "sec-fetch-dest": "empty",
+      "accept-encoding": "gzip, deflate, br, zstd"
+    }
+  }
+}

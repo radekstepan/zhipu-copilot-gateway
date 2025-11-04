@@ -1,0 +1,66 @@
+{
+  "id": "1762209723883-2q8c6",
+  "timestamp": "2025-11-03T22:42:05.016Z",
+  "duration_ms": 1133,
+  "note": "converted non-stream response to SSE",
+  "request": {
+    "method": "POST",
+    "url": "/v1/chat/completions",
+    "headers": {
+      "host": "localhost:11434",
+      "connection": "keep-alive",
+      "content-length": "2971",
+      "authorization": "Bearer",
+      "content-type": "application/json",
+      "openai-intent": "conversation-other",
+      "user-agent": "GitHubCopilotChat/0.32.4",
+      "x-github-api-version": "2025-05-01",
+      "x-initiator": "user",
+      "x-interaction-id": "ca19b16b-219c-4aa0-8d88-31f513d8adef",
+      "x-interaction-type": "conversation-other",
+      "x-onbehalf-extension-id": "github.copilot-chat/0.32.4",
+      "x-request-id": "76bf0970-91f2-4c08-9194-9aaaa454b620",
+      "x-vscode-user-agent-library-version": "electron-fetch",
+      "sec-fetch-site": "none",
+      "sec-fetch-mode": "no-cors",
+      "sec-fetch-dest": "empty",
+      "accept-encoding": "gzip, deflate, br, zstd"
+    },
+    "body_preview": {
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are an AI programming assistant.\nWhen asked for your name, you must respond with \"GitHub Copilot\".\nFollow the user's requirements carefully & to the letter.\nFollow Microsoft content policies.\nAvoid content that violates copyrights.\nIf you are asked to generate content that is harmful, hateful, racist, sexist, lewd, or violent, only respond with \"Sorry, I can't assist with that.\"\nKeep your answers short and impersonal.\nYou can answer general programming questions and perform the following tasks: \n* Ask a question about the files in your current workspace\n* Explain how the code in your active editor works\n* Make changes to existing code\n* Review the selected code in your active editor\n* Generate unit tests for the selected code\n* Propose a fix for the problems in the selected code\n* Scaffold code for a new file or project in a workspace\n* Create a new Jupyter Notebook\n* Ask questions about VS Code\n* Generate query parameters for workspace search\n* Ask how to do something in the terminal\n* Explain what just happened in the terminal\n* Propose a fix for the problems in the selected code\n* Explain how the code in your active editor works\n* Review the selected code in your active editor\n* Generate unit tests for the selected code\n* Make changes to existing code\nYou use the gemma3:12b large language model.\nThe user has the following folder open: /Users/radek/dev/zhipu-copilot-gateway.\nThe current date is November 3, 2025.\nUse Markdown formatting in your answers.\nWhen suggesting code changes or new content, use Markdown code blocks.\nTo start a code block, use 4 backticks.\nAfter the backticks, add the programming language name.\nIf the code modifies an existing file or should be placed at a specific location, add a line comment with 'filepath:' and the file path.\nIf you want the user to decide where to place the code, do not add the file path comment.\nIn the code block, use a line comment with '...existing code...' to indicate code that is already present in the file.\n````languageId\n// filepath: /path/to/file\n// ...existing code...\n{ changed code }\n// ...existing code...\n{ changed code }\n// ...existing code...\n````For code blocks use four backticks to start and end.\nAvoid wrapping the whole response in triple backticks.\nThe user works in an IDE called Visual Studio Code which has a concept for editors with open files, integrated unit test support, an output pane that shows the output of running the code as well as an integrated terminal.\nThe user is working on a Mac machine. Please respond with system specific commands if applicable.\nThe active document is the source code the user is looking at right now.\nYou can only give one reply for each conversation turn."
+        },
+        {
+          "role": "user",
+          "content": "<prompt>\nReturn an emoji\n</prompt>"
+        }
+      ],
+      "model": "gemma3:12b",
+      "temperature": 0.1,
+      "top_p": 1,
+      "n": 1,
+      "stream": true,
+      "stream_options": {
+        "include_usage": true
+      }
+    },
+    "body_file": "logs/1762209723883-2q8c6.request"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "text/event-stream; charset=utf-8",
+      "Cache-Control": "no-cache, no-transform",
+      "Connection": "keep-alive",
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, Accept",
+      "Access-Control-Max-Age": "600",
+      "Vary": "Origin"
+    },
+    "body_preview": "data: {\"id\":\"2025110406420453946643574340a5\",\"object\":\"chat.completion.chunk\",\"created\":1762209724,\"model\":\"gemma3:12b\",\"choices\":[{\"index\":0,\"delta\":{\"role\":\"assistant\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"2025110406420453946643574340a5\",\"object\":\"chat.completion.chunk\",\"created\":1762209724,\"model\":\"gemma3:12b\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"\\n👋\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"2025110406420453946643574340a5\",\"object\":\"chat.completion.chunk\",\"created\":1762209724,\"model\":\"gemma3:12b\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n",
+    "body_file": "logs/1762209723883-2q8c6.response"
+  }
+}

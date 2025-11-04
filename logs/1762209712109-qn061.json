@@ -1,0 +1,52 @@
+{
+  "id": "1762209712109-qn061",
+  "timestamp": "2025-11-03T22:41:52.113Z",
+  "duration_ms": 4,
+  "request": {
+    "method": "GET",
+    "url": "/api/tags",
+    "headers": {
+      "host": "localhost:11434",
+      "connection": "keep-alive",
+      "user-agent": "GitHubCopilotChat/0.32.4",
+      "x-vscode-user-agent-library-version": "electron-fetch",
+      "sec-fetch-site": "none",
+      "sec-fetch-mode": "no-cors",
+      "sec-fetch-dest": "empty",
+      "accept-encoding": "gzip, deflate, br, zstd"
+    },
+    "body_preview": null,
+    "body_file": null
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json; charset=utf-8",
+      "date": "Mon, 03 Nov 2025 22:41:52 GMT",
+      "content-length": "342",
+      "connection": "close"
+    },
+    "body_preview": {
+      "models": [
+        {
+          "name": "gemma3:12b",
+          "model": "gemma3:12b",
+          "modified_at": "2025-11-02T11:32:54.995736235-08:00",
+          "size": 8149190253,
+          "digest": "f4031aab637d1ffa37b42570452ae0e4fad0314754d17ded67322e4b95836f8a",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "gemma3",
+            "families": [
+              "gemma3"
+            ],
+            "parameter_size": "12.2B",
+            "quantization_level": "Q4_K_M"
+          }
+        }
+      ]
+    },
+    "body_file": "logs/1762209712109-qn061.response"
+  }
+}

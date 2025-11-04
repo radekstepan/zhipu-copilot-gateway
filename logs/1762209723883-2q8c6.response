@@ -1,0 +1,8 @@
+data: {"id":"2025110406420453946643574340a5","object":"chat.completion.chunk","created":1762209724,"model":"gemma3:12b","choices":[{"index":0,"delta":{"role":"assistant"},"finish_reason":null}]}
+
+data: {"id":"2025110406420453946643574340a5","object":"chat.completion.chunk","created":1762209724,"model":"gemma3:12b","choices":[{"index":0,"delta":{"content":"\n👋"},"finish_reason":null}]}
+
+data: {"id":"2025110406420453946643574340a5","object":"chat.completion.chunk","created":1762209724,"model":"gemma3:12b","choices":[{"index":0,"delta":{},"finish_reason":"stop"}]}
+
+data: [DONE]
+
