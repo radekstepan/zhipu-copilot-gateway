@@ -25,12 +25,7 @@ export function registerChatRoutes(app: FastifyInstance<any, any, any, any>) {
 
     const { model: requestedModel, messages, stream: streamRequested, ...rest } = openaiReq;
 
-    // Debug: log incoming request summary
-    try {
-      app.log.debug({ model: requestedModel, messageCount: Array.isArray(messages) ? messages.length : 0, streamRequested }, 'Incoming OpenAI-compatible request');
-    } catch (err) {
-      // ignore logging errors
-    }
+    // (removed verbose debug payload logging)
 
     if (!requestedModel) {
       return reply.code(400).headers(CORS_HEADERS).send({ error: 'Missing "model" in request body' });
@@ -52,14 +47,6 @@ export function registerChatRoutes(app: FastifyInstance<any, any, any, any>) {
       ...rest,
     };
 
-    // Debug: log the Zhipu request shape (truncated)
-    try {
-      const sample = JSON.stringify({ model: zhipuReq.model, messages: zhipuReq.messages?.slice(0, 5) });
-      app.log.debug({ sample: sample.slice(0, 1000) }, 'Prepared Zhipu request');
-    } catch (err) {
-      /* ignore */
-    }
-
     // Helper: extract textual content from a Zhipu choice (handles multiple shapes)
     const extractChoiceContent = (choice: any): string => {
       if (!choice) return '';
@@ -71,7 +58,7 @@ export function registerChatRoutes(app: FastifyInstance<any, any, any, any>) {
       if (typeof choice.text === 'string') return choice.text;
       if (typeof choice.content === 'string') return choice.content;
       // Fallback: try nested arrays or objects
-      if (Array.isArray(choice.contents) && choice.contents.length) return String(choice.contents[0]);
+      if (Array.isArray(choice.contents) && choice.contents.length) return String(choice.contents);
       return '';
     };
 
@@ -80,21 +67,24 @@ export function registerChatRoutes(app: FastifyInstance<any, any, any, any>) {
       try {
         const zhipuResp = await zhipuChatOnce(zhipuReq);
 
-        // Debug: log a small summary of the upstream response
-        try {
-          const preview = JSON.stringify({ id: zhipuResp.id, choices: (zhipuResp.choices || []).map((c: any) => ({ finish_reason: c.finish_reason })) });
-          app.log.debug({ preview: preview.slice(0, 1000) }, 'Zhipu non-stream response summary');
-        } catch (err) {
-          /* ignore */
-        }
+        // (removed verbose upstream preview logging)
 
         // Build a normalized OpenAI-like response so clients receive consistent shape.
         const normalizedChoices = (zhipuResp.choices || []).map((c: any, idx: number) => {
           const content = extractChoiceContent(c);
-          app.log.debug({ idx, extractedLength: content?.length ?? 0 }, 'Normalized choice extraction');
+
+          const message: { role: 'assistant'; content: string | null; tool_calls?: any[] } = {
+            role: 'assistant',
+            content: content || null, // Per OpenAI spec, content is null when tool_calls are present
+          };
+
+          if (c.message?.tool_calls) {
+            message.tool_calls = c.message.tool_calls;
+          }
+
           return {
             index: idx,
-            message: { role: 'assistant', content },
+            message: message,
             finish_reason: c.finish_reason ?? null,
           };
         });
@@ -105,15 +95,12 @@ export function registerChatRoutes(app: FastifyInstance<any, any, any, any>) {
           created: zhipuResp.created,
           model: requestedModel, // Return the model name the client requested
           choices: normalizedChoices,
+          usage: zhipuResp.usage, // Pass usage stats through
         };
 
-        // If no content was extracted, log a warning with full upstream preview to help the user
-        if (normalizedChoices.every((c: any) => !c.message.content)) {
-          try {
-            app.log.warn({ upstream: JSON.stringify(zhipuResp).slice(0, 2000) }, 'No assistant content could be extracted from Zhipu response');
-          } catch (err) {
-            app.log.warn('No assistant content could be extracted from Zhipu response (unserializable)');
-          }
+        // If no content or tool calls were extracted, log a warning
+        if (normalizedChoices.every((c: any) => !c.message.content && !c.message.tool_calls)) {
+          app.log.warn({ upstream: zhipuResp }, 'No assistant content or tool_calls could be extracted from Zhipu response');
         }
 
         return reply.code(200).headers(CORS_HEADERS).send(openaiResp);
@@ -126,14 +113,6 @@ export function registerChatRoutes(app: FastifyInstance<any, any, any, any>) {
     // --- STREAMING RESPONSE (SSE) ---
     try {
       const zhipuResp = await zhipuChatOnce(zhipuReq); // Simulate stream by getting full response first
-      // Accumulate content from the first choice using same extraction logic as above
-      const accumulatedContent = zhipuResp.choices && zhipuResp.choices.length
-        ? zhipuResp.choices.map((c: any, idx: number) => {
-            const piece = extractChoiceContent(c);
-            app.log.debug({ idx, pieceLength: piece.length }, 'Streaming: extracted piece length');
-            return piece;
-          }).join('')
-        : '';
 
       reply.raw.writeHead(200, {
         'Content-Type': 'text/event-stream; charset=utf-8',
@@ -153,14 +132,41 @@ export function registerChatRoutes(app: FastifyInstance<any, any, any, any>) {
       const roleChunk = { ...baseChunk, choices: [{ index: 0, delta: { role: 'assistant' }, finish_reason: null }] };
       reply.raw.write(`data: ${JSON.stringify(roleChunk)}\n\n`);
 
-      // 2. Send content chunks
-      for (const piece of chunkText(accumulatedContent, 32)) {
-        const contentChunk = { ...baseChunk, choices: [{ index: 0, delta: { content: piece }, finish_reason: null }] };
-        reply.raw.write(`data: ${JSON.stringify(contentChunk)}\n\n`);
+  const firstChoice = zhipuResp.choices?.[0];
+
+      // 2. Send content or tool_calls
+      if (firstChoice?.message?.tool_calls) {
+        // Stream tool calls by chunking the arguments
+        const toolCalls = firstChoice.message.tool_calls;
+        for (let i = 0; i < toolCalls.length; i++) {
+          const toolCall = toolCalls[i];
+          // Send the tool call structure with an empty arguments string first
+          const toolPreamble = {
+            ...baseChunk,
+            choices: [{
+              index: 0,
+              delta: { tool_calls: [{ index: i, id: toolCall.id, type: toolCall.type, function: { name: toolCall.function.name, arguments: '' } }] },
+            }],
+          };
+          reply.raw.write(`data: ${JSON.stringify(toolPreamble)}\n\n`);
+
+          // Stream the arguments string in pieces
+          for (const piece of chunkText(toolCall.function.arguments, 32)) {
+            const argsChunk = { ...baseChunk, choices: [{ index: 0, delta: { tool_calls: [{ index: i, function: { arguments: piece } }] } }] };
+            reply.raw.write(`data: ${JSON.stringify(argsChunk)}\n\n`);
+          }
+        }
+      } else {
+        // Stream regular content
+        const accumulatedContent = firstChoice ? extractChoiceContent(firstChoice) : '';
+        for (const piece of chunkText(accumulatedContent, 32)) {
+          const contentChunk = { ...baseChunk, choices: [{ index: 0, delta: { content: piece }, finish_reason: null }] };
+          reply.raw.write(`data: ${JSON.stringify(contentChunk)}\n\n`);
+        }
       }
 
       // 3. Send finish chunk
-      const finishReason = zhipuResp.choices?.[0]?.finish_reason ?? 'stop';
+      const finishReason = firstChoice?.finish_reason ?? 'stop';
       const finishChunk = { ...baseChunk, choices: [{ index: 0, delta: {}, finish_reason: finishReason }] };
       reply.raw.write(`data: ${JSON.stringify(finishChunk)}\n\n`);
 
@@ -169,7 +175,6 @@ export function registerChatRoutes(app: FastifyInstance<any, any, any, any>) {
       reply.raw.end();
     } catch (error: any) {
       app.log.error(error, 'Error during Zhipu stream simulation');
-      // If headers are not sent, we can send a proper error. Otherwise, just end the stream.
       if (!reply.raw.headersSent) {
         reply.code(502).headers(CORS_HEADERS).send({ error: 'Upstream API error', detail: error.message });
       } else {
