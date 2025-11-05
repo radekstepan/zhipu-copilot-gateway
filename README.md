@@ -31,3 +31,46 @@ npm run build && npm start
 # or from anywhere:
 infisical run -- npx @radekstepan/zhipu-copilot-gateway
 ```
+
+### Modes
+
+The gateway supports two modes:
+
+#### Proxy Mode (default)
+Forwards requests to a local Ollama instance while also intercepting `/v1/chat/completions` to call Zhipu GLM:
+
+```bash
+npm start
+# or
+node dist/cli.js --mode proxy
+```
+
+In this mode:
+- All `/api/*` and `/v1/*` routes (except `/v1/chat/completions`) are proxied to your local Ollama instance (default: `http://127.0.0.1:11435`)
+- `/v1/chat/completions` is intercepted and routed to Zhipu GLM models
+- Set `OLLAMA_UPSTREAM` environment variable to change the upstream Ollama URL
+
+#### Direct Mode
+Bypasses local Ollama entirely and mocks all Ollama endpoints while routing chat requests to Zhipu GLM:
+
+```bash
+node dist/cli.js --mode direct
+```
+
+In this mode:
+- `/api/version` returns a mock Ollama version (0.12.9)
+- `/api/tags` returns the list of GLM models from `models.json`
+- `/v1/chat/completions` calls Zhipu GLM directly
+- No local Ollama instance required
+
+### CLI Options
+
+```bash
+node dist/cli.js --help
+
+Options:
+  --host        Host interface to bind (default: 127.0.0.1)
+  -p, --port    Port to bind (default: 11434)
+  -m, --mode    Mode: "proxy" or "direct" (default: proxy)
+  -h, --help    Show help
+```
