@@ -16,7 +16,7 @@ export const config = {
   // Keep the base you’ve been using; change if your Zhipu account uses a different one.
   ZHIPUAI_API_BASE_URL: process.env.ZHIPUAI_API_BASE_URL || 'https://api.z.ai/api/coding/paas/v4',
   // Default GLM model to use when the client requests an unknown model name
-  DEFAULT_ZHIPU_MODEL: (process.env.DEFAULT_ZHIPU_MODEL || 'glm-4.6').trim(),
+  DEFAULT_ZHIPU_MODEL: (process.env.DEFAULT_ZHIPU_MODEL || 'glm-4').trim(),
 };
 
 export const initializeConfig = () => {
@@ -27,7 +27,7 @@ export const initializeConfig = () => {
     if (apiKey) break;
   }
   if (!apiKey) {
-    throw new Error(`API key not found. Please ensure ${apiKeyNames.join(' or ')} is available in your Infisical project.`);
+    throw new Error(`API key not found. Please set ${apiKeyNames.join(' or ')} in your environment.`);
   }
   config.ZHIPUAI_API_KEY = apiKey;
 };

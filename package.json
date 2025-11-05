@@ -1,7 +1,7 @@
 {
   "name": "zhipu-copilot-gateway",
   "version": "1.0.0",
-  "description": "Ollama proxy & OpenAI chat gateway to Zhipu",
+  "description": "Ollama-compatible gateway to Zhipu GLM models",
   "main": "dist/cli.js",
   "bin": {
     "zhipu-copilot-gateway": "dist/cli.js"
@@ -12,27 +12,28 @@
   ],
   "license": "MIT",
   "scripts": {
-    "build": "tsc && copyfiles -u 1 src/**/*.json dist/",
-    "start": "infisical run -- node dist/cli.js",
-    "dev": "infisical run -- ts-node-dev --respawn --transpile-only src/cli.ts",
+  "build": "tsc && copyfiles -u 1 src/**/*.json dist/",
+  "start": "infisical run -- node dist/cli.js",
+  "dev": "infisical run -- ts-node-dev --respawn --transpile-only src/cli.ts",
+    "test": "vitest run --coverage",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@fastify/cors": "^9.0.1",
     "axios": "^1.7.2",
     "dotenv": "^16.4.5",
     "fastify": "^4.27.0",
-    "http-proxy": "^1.18.1",
-    "winston": "^3.18.3",
-    "winston-daily-rotate-file": "^5.0.0",
+    "pino-pretty": "^11.2.1",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
-    "@types/http-proxy": "^1.17.14",
     "@types/node": "^20.12.12",
+    "@types/supertest": "^6.0.2",
     "@types/yargs": "^17.0.32",
+    "@vitest/coverage-v8": "^1.6.0",
     "copyfiles": "^2.4.1",
+    "supertest": "^7.0.0",
     "ts-node-dev": "^2.0.0",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "vitest": "^1.6.0"
   }
 }
