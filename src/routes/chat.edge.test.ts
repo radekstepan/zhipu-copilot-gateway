@@ -4,15 +4,42 @@ import { FastifyInstance } from 'fastify';
 import { buildServer } from '../server';
 import * as zhipu from '../zhipu';
 
-// Mock the zhipu module and zhipuChatOnce
-vi.mock('../zhipu', async (importOriginal) => {
-  const original = await importOriginal<typeof zhipu>();
-  return {
-    ...original,
-    zhipuChatOnce: vi.fn(),
+// Helper function to create streaming mock data
+const createStreamingMock = (customData?: any) => {
+  const defaultData = {
+    id: 'chatcmpl-mock-456',
+    object: 'chat.completion.chunk',
+    created: Date.now(),
+    model: 'glm-4.5',
+    choices: [{ index: 0, delta: { role: 'assistant' } }],
   };
-});
+  
+  const data = customData || defaultData;
+  
+  return {
+    on: (event: string, callback: (chunk: Buffer) => void) => {
+      if (event === 'data') {
+        // Simulate async data emission
+        setTimeout(() => {
+          callback(Buffer.from(`data: ${JSON.stringify(data)}\n\n`));
+        }, 10);
+      } else if (event === 'end') {
+        setTimeout(() => {
+          callback(Buffer.from('data: [DONE]\n\n'));
+        }, 20);
+      }
+    },
+  };
+};
+
+// Mock the zhipu module
+vi.mock('../zhipu', () => ({
+  zhipuChatOnce: vi.fn(),
+  zhipuChatStream: vi.fn(),
+  normalizeModelName: vi.fn((model: string) => model),
+}));
 const mockedZhipuChatOnce = vi.mocked(zhipu.zhipuChatOnce);
+const mockedZhipuChatStream = vi.mocked(zhipu.zhipuChatStream);
 
 describe('Chat Routes - edge cases', () => {
   let app: FastifyInstance;
@@ -85,27 +112,36 @@ describe('Chat Routes - edge cases', () => {
   });
 
   it('streams tool_calls correctly in SSE mode', async () => {
-    const zhipuResp = {
+    const customData = {
       id: 'stream-tool-1',
+      object: 'chat.completion.chunk',
       created: Date.now(),
       model: 'glm',
       choices: [
         {
-          message: {
+          index: 0,
+          delta: {
             tool_calls: [
               {
                 id: 't1',
-                type: 'tool',
+                type: 'tool' as const,
                 function: { name: 'fn', arguments: 'ARGUMENTS-STREAM' },
               },
             ],
           },
-          finish_reason: 'stop',
+          finish_reason: 'tool_calls',
         },
       ],
     };
 
-  mockedZhipuChatOnce.mockResolvedValueOnce(zhipuResp as any);
+    const mockStreamData = createStreamingMock(customData);
+    mockedZhipuChatStream.mockResolvedValue({
+      data: mockStreamData,
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {} as any,
+    } as any);
 
     const response = await supertest(app.server)
       .post('/v1/chat/completions')
@@ -117,6 +153,7 @@ describe('Chat Routes - edge cases', () => {
     expect(text).toContain('tool_calls');
     expect(text).toContain('"id":"t1"');
     expect(text).toContain('ARGUMENTS-STREAM');
+    expect(text).toContain('finish_reason":"tool_calls"');
     expect(text.trim().endsWith('data: [DONE]')).toBe(true);
   });
 });

@@ -3,29 +3,82 @@ import { config } from './config';
 import { logger } from './logger';
 
 // ---- Minimal Zhipu request/response shapes (local to this file) ----
+export type ChatMessageContentPart = {
+  type: string;
+  text?: string;
+  image_url?: { url: string; [key: string]: any };
+  [key: string]: any;
+};
+
+export type ChatMessageContent = string | ChatMessageContentPart[];
+
+export interface ChatCompletionToolCallFunction {
+  name: string;
+  arguments: string;
+  [key: string]: any;
+}
+
+export interface ChatCompletionToolCall {
+  id?: string;
+  type: 'function';
+  function: ChatCompletionToolCallFunction;
+  [key: string]: any;
+}
+
+export interface ZhipuChatMessage {
+  role: 'system' | 'user' | 'assistant' | 'tool' | string;
+  content?: ChatMessageContent;
+  name?: string;
+  tool_call_id?: string;
+  tool_calls?: ChatCompletionToolCall[];
+  refusal?: string;
+  [key: string]: any;
+}
+
 export interface ZhipuChatRequest {
   model: string;
-  messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>;
+  messages: ZhipuChatMessage[];
   stream?: boolean;
   temperature?: number;
   top_p?: number;
   max_tokens?: number;
+  tools?: Array<Record<string, any>>;
+  tool_choice?: Record<string, any> | string;
+  response_format?: Record<string, any>;
+  logprobs?: boolean;
+  user?: string;
+  metadata?: Record<string, any>;
+  [key: string]: any;
 }
+
 export interface ZhipuChatNonStreamResp {
   id: string;
   created: number;
   model: string;
   choices: Array<{
     index: number;
-    message?: { role: 'assistant'; content: string | null; tool_calls?: any[] };
-    delta?: { role?: 'assistant'; content?: string };
+    message?: {
+      role: 'assistant';
+      content?: string | ChatMessageContentPart[] | null;
+      tool_calls?: ChatCompletionToolCall[];
+      refusal?: string;
+      [key: string]: any;
+    };
+    delta?: {
+      role?: 'assistant';
+      content?: string | ChatMessageContentPart[];
+      tool_calls?: ChatCompletionToolCall[];
+      [key: string]: any;
+    };
     finish_reason?: string | null;
+    [key: string]: any;
   }>;
   usage?: {
     prompt_tokens: number;
     completion_tokens: number;
     total_tokens: number;
   };
+  [key: string]: any;
 }
 
 const CHAT_PATH = '/chat/completions';

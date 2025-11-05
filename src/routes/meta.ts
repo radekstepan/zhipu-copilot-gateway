@@ -41,6 +41,10 @@ export function registerMetaRoutes(app: FastifyInstance<any, any, any, any>) {
         .send({ error: `model '${modelName}' not found` });
     }
 
+    const modelBaseName = model.model.split(':')[0];
+    // Read context length directly from the model's details, with a sensible fallback.
+    const contextLength = model.details?.context_length || 32768;
+
     // This response structure mimics a real Ollama server response.
     const response = {
       license: 'Apache 2.0',
@@ -54,10 +58,12 @@ export function registerMetaRoutes(app: FastifyInstance<any, any, any, any>) {
       },
       model_info: {
         'general.architecture': 'glm',
-        'general.basename': model.model.split(':')[0],
-        'glm.context_length': 32768, // A common context length for GLM-4 models
+        'general.basename': modelBaseName,
+        'glm.context_length': contextLength, // <-- READ FROM JSON
       },
-      capabilities: ['tools', 'vision'], // Advertise tool and vision capabilities
+      // NOTE: Capabilities are still hardcoded as Zhipu models generally support these.
+      // This could be made dynamic in the future if needed.
+      capabilities: ['tools', 'vision'],
     };
 
     reply

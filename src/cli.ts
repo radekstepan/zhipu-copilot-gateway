@@ -22,4 +22,7 @@ async function main() {
   }
 }
 
-main();
+// Do not auto-run the CLI when running tests; tests import this module and mock behavior.
+if (process.env.NODE_ENV !== 'test') {
+  main();
+}
