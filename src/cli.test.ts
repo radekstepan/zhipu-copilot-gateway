@@ -11,7 +11,7 @@ vi.mock('yargs/yargs', () => {
     }),
   };
 });
-vi.mock('yargs/helpers', () => ({ hideBin: (argv: any) => argv }));
+vi.mock('yargs/helpers', () => ({ hideBin: (argv: string[]) => argv }));
 vi.mock('./server');
 vi.mock('./logger');
 

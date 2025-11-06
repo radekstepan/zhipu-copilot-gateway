@@ -3,9 +3,10 @@ import supertest from 'supertest';
 import { FastifyInstance } from 'fastify';
 import { buildServer } from '../server';
 import * as zhipu from '../zhipu';
+import { AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 
 // Helper function to create streaming mock data
-const createStreamingMock = (customData?: any) => {
+const createStreamingMock = (customData?: Record<string, unknown>) => {
   const defaultData = {
     id: 'chatcmpl-mock-456',
     object: 'chat.completion.chunk',
@@ -85,7 +86,7 @@ describe('Chat Routes - edge cases', () => {
 
   it('extractChoiceContent handles delta, text, content and contents array', async () => {
     // delta
-  mockedZhipuChatOnce.mockResolvedValueOnce({ id: 'd1', created: Date.now(), model: 'glm', choices: [{ delta: { content: 'delta-content' } }] } as any);
+  mockedZhipuChatOnce.mockResolvedValueOnce({ id: 'd1', created: Date.now(), model: 'glm', choices: [{ delta: { content: 'delta-content' } }] } as zhipu.ZhipuChatNonStreamResp);
     let resp = await supertest(app.server)
       .post('/v1/chat/completions')
       .send({ model: 'glm-4.6:latest', messages: [{ role: 'user', content: 'h' }], stream: false });
@@ -93,19 +94,19 @@ describe('Chat Routes - edge cases', () => {
     expect(resp.body.choices[0].message.content).toBe('delta-content');
 
     // text
-  mockedZhipuChatOnce.mockResolvedValueOnce({ id: 't1', created: Date.now(), model: 'glm', choices: [{ text: 'text-content' }] } as any);
+  mockedZhipuChatOnce.mockResolvedValueOnce({ id: 't1', created: Date.now(), model: 'glm', choices: [{ index: 0, text: 'text-content' }] } as zhipu.ZhipuChatNonStreamResp);
     resp = await supertest(app.server).post('/v1/chat/completions').send({ model: 'glm-4.6:latest', messages: [{ role: 'user', content: 'h' }], stream: false });
     expect(resp.status).toBe(200);
     expect(resp.body.choices[0].message.content).toBe('text-content');
 
     // content
-  mockedZhipuChatOnce.mockResolvedValueOnce({ id: 'c1', created: Date.now(), model: 'glm', choices: [{ content: 'content-field' }] } as any);
+  mockedZhipuChatOnce.mockResolvedValueOnce({ id: 'c1', created: Date.now(), model: 'glm', choices: [{ index: 0, content: 'content-field' }] } as zhipu.ZhipuChatNonStreamResp);
     resp = await supertest(app.server).post('/v1/chat/completions').send({ model: 'glm-4.6:latest', messages: [{ role: 'user', content: 'h' }], stream: false });
     expect(resp.status).toBe(200);
     expect(resp.body.choices[0].message.content).toBe('content-field');
 
     // contents array
-  mockedZhipuChatOnce.mockResolvedValueOnce({ id: 'a1', created: Date.now(), model: 'glm', choices: [{ contents: ['a', 'b'] }] } as any);
+  mockedZhipuChatOnce.mockResolvedValueOnce({ id: 'a1', created: Date.now(), model: 'glm', choices: [{ index: 0, contents: ['a', 'b'] }] } as zhipu.ZhipuChatNonStreamResp);
     resp = await supertest(app.server).post('/v1/chat/completions').send({ model: 'glm-4.6:latest', messages: [{ role: 'user', content: 'h' }], stream: false });
     expect(resp.status).toBe(200);
     expect(resp.body.choices[0].message.content).toBe('a,b');
@@ -140,8 +141,8 @@ describe('Chat Routes - edge cases', () => {
       status: 200,
       statusText: 'OK',
       headers: {},
-      config: {} as any,
-    } as any);
+      config: {} as InternalAxiosRequestConfig,
+    } as AxiosResponse);
 
     const response = await supertest(app.server)
       .post('/v1/chat/completions')

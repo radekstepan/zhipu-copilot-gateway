@@ -107,14 +107,14 @@ describe('config initialization', () => {
   });
 
   it('initializeConfig handles null environment variables', () => {
-    process.env.ZHIPUAI_API_KEY = null as any;
-    process.env.ZHIPU_API_KEY = null as any;
+    process.env.ZHIPUAI_API_KEY = null as unknown as string | undefined;
+    process.env.ZHIPU_API_KEY = null as unknown as string | undefined;
     expect(() => initializeConfig()).toThrow(/API key not found/);
   });
 
   it('initializeConfig handles undefined environment variables', () => {
-    process.env.ZHIPUAI_API_KEY = undefined as any;
-    process.env.ZHIPU_API_KEY = undefined as any;
+    process.env.ZHIPUAI_API_KEY = undefined;
+    process.env.ZHIPU_API_KEY = undefined;
     expect(() => initializeConfig()).toThrow(/API key not found/);
   });
 

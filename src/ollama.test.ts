@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { chunkText, createNdjsonWriter, endNdjson } from './ollama';
+import type { FastifyReply } from 'fastify';
 
 describe('ollama utilities', () => {
   it('chunkText splits correctly', () => {
@@ -11,7 +12,7 @@ describe('ollama utilities', () => {
   it('createNdjsonWriter writes ndjson and endNdjson ends the stream', () => {
     const writes: string[] = [];
     const raw = { write: (s: string) => writes.push(s), end: vi.fn() };
-    const reply: any = { header: vi.fn(), raw };
+    const reply = { header: vi.fn(), raw } as unknown as FastifyReply;
 
     const writer = createNdjsonWriter(reply);
     writer({ hello: 'world' });
