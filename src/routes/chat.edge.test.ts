@@ -47,7 +47,7 @@ describe('Chat Routes - edge cases', () => {
 
   beforeAll(async () => {
     process.env.ZHIPUAI_API_KEY = 'dummy-test-key';
-    app = buildServer();
+    app = await buildServer();
     await app.ready();
   });
 

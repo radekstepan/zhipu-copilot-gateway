@@ -14,7 +14,7 @@ async function main() {
     .help().alias('help', 'h').argv;
 
   try {
-    const app = buildServer();
+    const app = await buildServer();
     await app.listen({ port: argv.port, host: argv.host });
   } catch (err) {
     logger.error(err, 'Application failed to start');

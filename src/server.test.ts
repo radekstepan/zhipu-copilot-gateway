@@ -54,7 +54,7 @@ describe('server module', () => {
   it('should create Fastify server', async () => {
     const { buildServer } = await import('./server');
     
-    const app = buildServer();
+    const app = await buildServer();
     
     expect(app).toBeDefined();
     expect(app.log).toBeDefined();
@@ -73,8 +73,8 @@ describe('server module', () => {
   it('should handle multiple server instances', async () => {
     const { buildServer } = await import('./server');
     
-    const app1 = buildServer();
-    const app2 = buildServer();
+    const app1 = await buildServer();
+    const app2 = await buildServer();
     
     expect(app1).toBeDefined();
     expect(app2).toBeDefined();
@@ -84,7 +84,7 @@ describe('server module', () => {
   it('should configure Fastify with logger', async () => {
     const { buildServer } = await import('./server');
     
-    const app = buildServer();
+    const app = await buildServer();
     
     expect(app.log).toBeDefined();
   });
@@ -92,7 +92,7 @@ describe('server module', () => {
   it('should add content type parser for all content types', async () => {
     const { buildServer } = await import('./server');
     
-    const app = buildServer();
+    const app = await buildServer();
     
     expect(app.addContentTypeParser).toBeDefined();
   });
@@ -100,7 +100,7 @@ describe('server module', () => {
   it('should initialize configuration on startup', async () => {
     const { buildServer } = await import('./server');
     
-    buildServer();
+    await buildServer();
     
     expect(mockInitializeConfig).toHaveBeenCalledTimes(1);
   });
@@ -108,7 +108,7 @@ describe('server module', () => {
   it('should register meta and chat routes', async () => {
     const { buildServer } = await import('./server');
     
-    buildServer();
+    await buildServer();
     
     expect(mockRegisterMetaRoutes).toHaveBeenCalledTimes(1);
     expect(mockRegisterChatRoutes).toHaveBeenCalledTimes(1);
@@ -117,7 +117,7 @@ describe('server module', () => {
   it('should log ready messages after successful setup', async () => {
     const { buildServer } = await import('./server');
     
-    const app = buildServer();
+    const app = await buildServer();
     
     // The logger should be available on the app instance
     expect(app.log).toBeDefined();
@@ -132,7 +132,7 @@ describe('server module', () => {
 
     const { buildServer } = await import('./server');
     
-    expect(() => buildServer()).toThrow('Configuration failed');
+    await expect(buildServer()).rejects.toThrow('Configuration failed');
   });
 
   it('should log error when configuration initialization fails', async () => {
@@ -145,13 +145,13 @@ describe('server module', () => {
     // Let's check that the error is thrown and the logger would be called
     const { buildServer } = await import('./server');
     
-    expect(() => buildServer()).toThrow('Configuration failed');
+    await expect(buildServer()).rejects.toThrow('Configuration failed');
   });
 
   it('should register health check endpoint', async () => {
     const { buildServer } = await import('./server');
     
-    const app = buildServer();
+    const app = await buildServer();
     
     // Verify that the app has routes registered (we can't easily test the actual route without complex setup)
     // But we can verify the app structure is correct
@@ -162,14 +162,14 @@ describe('server module', () => {
   it('should configure content type parser for all content types', async () => {
     const { buildServer } = await import('./server');
     
-    const app = buildServer();
+    const app = await buildServer();
     
     // The content type parser should be configured (we can't easily mock this due to Fastify's internal implementation)
     // But we can verify the app has the method
     expect(typeof app.addContentTypeParser).toBe('function');
     
     // Test that the server can handle different content types by checking it doesn't throw during creation
-    expect(() => buildServer()).not.toThrow();
+    await expect(buildServer()).resolves.toBeDefined();
   });
 
   it('should handle content type parser callback', async () => {
@@ -193,8 +193,8 @@ describe('server module', () => {
     const { buildServer, CORS_HEADERS } = await import('./server');
     
     // Build server multiple times to ensure no conflicts
-    const app1 = buildServer();
-    const app2 = buildServer();
+    const app1 = await buildServer();
+    const app2 = await buildServer();
     
     // Verify both servers are properly configured
     expect(app1).toBeDefined();

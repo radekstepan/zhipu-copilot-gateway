@@ -10,7 +10,7 @@ describe('Meta Routes', () => {
   beforeAll(async () => {
     // Set a dummy API key to prevent config initialization from failing
     process.env.ZHIPUAI_API_KEY = 'dummy-test-key';
-    app = buildServer();
+    app = await buildServer();
     await app.ready();
   });
 

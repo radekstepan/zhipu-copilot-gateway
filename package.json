@@ -1,6 +1,6 @@
 {
   "name": "zhipu-copilot-gateway",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Ollama-compatible gateway to Zhipu GLM models",
   "main": "dist/cli.js",
   "bin": {
@@ -12,20 +12,23 @@
   ],
   "license": "MIT",
   "scripts": {
-  "build": "tsc && copyfiles -u 1 src/**/*.json dist/",
-  "start": "infisical run -- node dist/cli.js",
-  "dev": "infisical run -- ts-node-dev --respawn --transpile-only src/cli.ts",
+    "build": "tsc && copyfiles -u 1 src/**/*.json dist/",
+    "start": "infisical run -- node dist/cli.js",
+    "dev": "infisical run -- ts-node-dev --respawn --transpile-only src/cli.ts",
     "test": "vitest run --coverage",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "axios": "^1.7.2",
+    "detect-port": "^2.1.0",
     "dotenv": "^16.4.5",
     "fastify": "^4.27.0",
+    "kill-port": "^2.0.1",
     "pino-pretty": "^11.2.1",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
+    "@types/kill-port": "^2.0.3",
     "@types/node": "^20.12.12",
     "@types/supertest": "^6.0.2",
     "@types/yargs": "^17.0.32",
